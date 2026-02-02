@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Baza wozów strażackich</title>
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:20px; }
+.woz { background:white; margin:10px; padding:10px; border-radius:8px; display:flex; gap:10px; align-items:center; }
+img { width:150px; border-radius:6px; }
+input, select { margin:5px; padding:5px; }
+</style>
+</head>
+<body>
+
+<h1>🚒 Baza wozów strażackich w Polsce</h1>
+
+<input type="text" id="search" placeholder="Szukaj jednostki...">
+<select id="filterStatus">
+  <option value="">Wszystkie statusy</option>
+  <option value="czynny">Czynny</option>
+  <option value="zabytkowy">Zabytkowy</option>
+  <option value="wycofany">Wycofany</option>
+</select>
+
+<div id="lista"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script>
+// Link do pliku CSV z Google Sheets (możesz zastąpić własnym)
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQX_EXAMPLE_LINK/pub?output=csv';
+
+// Wczytanie CSV
+Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    complete: function(results) {
+        window.wozy = results.data;
+        displayWozow();
+    }
+});
+
+function displayWozow() {
+    const lista = document.getElementById('lista');
+    const search = document.getElementById('search').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    lista.innerHTML = '';
+    window.wozy.forEach(w => {
+        if (w.Jednostka.toLowerCase().includes(search) &&
+            (status === '' || w.Status === status)) {
+            const div = document.createElement('div');
+            div.className = 'woz';
+            div.innerHTML = `
+                <img src="${w.Zdjęcie}" alt="${w.Jednostka}">
+                <div>
+                    <h3>${w.Jednostka}</h3>
+                    <p>Typ: ${w.Typ}</p>
+                    <p>Marka: ${w.Marka}</p>
+                    <p>Rok: ${w.Rok}</p>
+                    <p>Status: ${w.Status}</p>
+                </div>
+            `;
+            lista.appendChild(div);
+        }
+    });
+}
+
+document.getElementById('search').addEventListener('input', displayWozow);
+document.getElementById('filterStatus').addEventListener('change', displayWozow);
+</script>
+
+</body>
+</html>
